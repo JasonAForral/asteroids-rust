@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Asteroids Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game-canvas"></canvas>
+    <script type="module">
+        import init, { Game } from './pkg/cursor_asteroids.js';
+
+        async function main() {
+            await init();
+            
+            const canvas = document.getElementById('game-canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            
+            const game = new Game(canvas);
+            
+            // Game loop
+            function gameLoop() {
+                game.update();
+                game.render();
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Handle keyboard input
+            const keys = new Set();
+            window.addEventListener('keydown', (e) => keys.add(e.key));
+            window.addEventListener('keyup', (e) => keys.delete(e.key));
+            
+            // Update game state based on keyboard input
+            function handleInput() {
+                if (keys.has('ArrowLeft')) {
+                    game.rotate_left();
+                }
+                if (keys.has('ArrowRight')) {
+                    game.rotate_right();
+                }
+                if (keys.has('ArrowUp')) {
+                    game.thrust();
+                }
+                if (keys.has(' ')) {
+                    game.shoot();
+                }
+                requestAnimationFrame(handleInput);
+            }
+            
+            gameLoop();
+            handleInput();
+        }
+
+        main();
+    </script>
+</body>
+</html> 
