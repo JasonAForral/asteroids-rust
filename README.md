@@ -36,4 +36,35 @@ python3 -m http.server 8000 --bind 127.0.0.1
 - Bullet shooting mechanics
 - Score tracking
 - Collision detection
-- Smooth animation using requestAnimationFrame 
+- Smooth animation using requestAnimationFrame
+
+## Testing
+
+The game includes a comprehensive test suite that can be run in both Node.js and browser environments.
+
+### Running Tests in Browser
+
+```bash
+wasm-pack test --chrome
+```
+
+### Running Tests in Firefox
+
+```bash
+wasm-pack test --firefox
+```
+
+### Running Tests in Safari
+
+```bash
+wasm-pack test --safari
+```
+
+The test suite covers:
+- Player creation and movement
+- Asteroid creation and movement
+- Bullet creation and movement
+- Collision detection
+- Game state management
+
+Note: Browser tests require the appropriate browser to be installed on your system. 
