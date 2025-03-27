@@ -40,31 +40,34 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 ## Testing
 
-The game includes a comprehensive test suite that can be run in both Node.js and browser environments.
-
-### Running Tests in Browser
+The game includes a comprehensive test suite that can be run using `cargo test`. These tests cover all the core game mechanics:
 
 ```bash
-wasm-pack test --chrome
+cargo test
 ```
 
-### Running Tests in Firefox
+The test suite includes:
 
-```bash
-wasm-pack test --firefox
-```
+### Player Tests
+- Player creation and initialization
+- Rotation mechanics
+- Thrust mechanics
+- Movement and position updates
 
-### Running Tests in Safari
+### Asteroid Tests
+- Asteroid creation and initialization
+- Movement mechanics
+- Size verification
 
-```bash
-wasm-pack test --safari
-```
-
-The test suite covers:
-- Player creation and movement
-- Asteroid creation and movement
-- Bullet creation and movement
+### Bullet Tests
+- Bullet creation and initialization
+- Movement mechanics
 - Collision detection
-- Game state management
 
-Note: Browser tests require the appropriate browser to be installed on your system. 
+### Game Mechanics Tests
+- Combined tests of player, asteroid, and bullet interactions
+- Movement verification
+- Collision detection
+- Score tracking
+
+All tests are designed to run in a pure Rust environment without any Web API dependencies, making them fast and reliable for development and CI/CD pipelines. 

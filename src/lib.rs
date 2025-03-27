@@ -260,11 +260,8 @@ impl Bullet {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use wasm_bindgen_test::*;
 
-    wasm_bindgen_test_configure!(run_in_browser);
-
-    #[wasm_bindgen_test]
+    #[test]
     fn test_player_creation() {
         let player = Player::new(100.0, 100.0);
         assert_eq!(player.x, 100.0);
@@ -274,21 +271,33 @@ mod tests {
         assert_eq!(player.velocity_y, 0.0);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
     fn test_player_rotation() {
         let mut player = Player::new(100.0, 100.0);
         player.rotate(0.5);
         assert!((player.angle - 0.5).abs() < 0.0001);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
     fn test_player_thrust() {
         let mut player = Player::new(100.0, 100.0);
         player.thrust();
         assert!(player.velocity_x != 0.0 || player.velocity_y != 0.0);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
+    fn test_player_movement() {
+        let mut player = Player::new(100.0, 100.0);
+        let initial_x = player.x;
+        let initial_y = player.y;
+        player.velocity_x = 1.0;
+        player.velocity_y = 1.0;
+        player.update();
+        assert_eq!(player.x, initial_x + 1.0);
+        assert_eq!(player.y, initial_y + 1.0);
+    }
+
+    #[test]
     fn test_asteroid_creation() {
         let asteroid = Asteroid::new(100.0, 100.0);
         assert_eq!(asteroid.x, 100.0);
@@ -298,7 +307,7 @@ mod tests {
         assert!(asteroid.velocity_y.abs() <= 1.0);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
     fn test_asteroid_movement() {
         let mut asteroid = Asteroid::new(100.0, 100.0);
         let initial_x = asteroid.x;
@@ -307,7 +316,7 @@ mod tests {
         assert!(asteroid.x != initial_x || asteroid.y != initial_y);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
     fn test_bullet_creation() {
         let player = Player::new(100.0, 100.0);
         let bullet = player.shoot();
@@ -316,7 +325,7 @@ mod tests {
         assert!(bullet.velocity_x != 0.0 || bullet.velocity_y != 0.0);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
     fn test_bullet_movement() {
         let mut bullet = Bullet {
             x: 100.0,
@@ -331,7 +340,7 @@ mod tests {
         assert_eq!(bullet.y, initial_y + 1.0);
     }
 
-    #[wasm_bindgen_test]
+    #[test]
     fn test_collision_detection() {
         let bullet = Bullet {
             x: 100.0,
@@ -355,5 +364,69 @@ mod tests {
             velocity_y: 0.0,
         };
         assert!(!bullet.collides_with(&asteroid));
+    }
+
+    #[test]
+    fn test_game_mechanics() {
+        // Create a mock game state with just the core game logic
+        let mut player = Player::new(400.0, 300.0);
+        let mut asteroids = vec![
+            Asteroid::new(100.0, 100.0),
+            Asteroid::new(200.0, 200.0),
+            Asteroid::new(300.0, 300.0),
+        ];
+        let mut bullets = Vec::new();
+        let mut score = 0;
+
+        // Test shooting
+        let initial_bullet_count = bullets.len();
+        bullets.push(player.shoot());
+        assert_eq!(bullets.len(), initial_bullet_count + 1);
+
+        // Test rotation
+        let initial_angle = player.angle;
+        player.rotate(-0.1); // rotate left
+        assert!(player.angle < initial_angle);
+        player.rotate(0.1); // rotate right
+        assert!((player.angle - initial_angle).abs() < 0.0001); // Should be back to initial angle
+
+        // Test thrust
+        let initial_velocity_x = player.velocity_x;
+        let initial_velocity_y = player.velocity_y;
+        player.thrust();
+        assert!(player.velocity_x != initial_velocity_x || 
+                player.velocity_y != initial_velocity_y);
+
+        // Test movement
+        let initial_x = player.x;
+        let initial_y = player.y;
+        player.update();
+        assert!(player.x != initial_x || player.y != initial_y);
+
+        // Test asteroid movement
+        for asteroid in &mut asteroids {
+            let initial_x = asteroid.x;
+            let initial_y = asteroid.y;
+            asteroid.update();
+            assert!(asteroid.x != initial_x || asteroid.y != initial_y);
+        }
+
+        // Test bullet movement
+        for bullet in &mut bullets {
+            let initial_x = bullet.x;
+            let initial_y = bullet.y;
+            bullet.update();
+            assert!(bullet.x != initial_x || bullet.y != initial_y);
+        }
+
+        // Test collision detection
+        let bullet = Bullet {
+            x: 100.0,
+            y: 100.0,
+            velocity_x: 0.0,
+            velocity_y: 0.0,
+        };
+        let asteroid = &asteroids[0];
+        assert!(bullet.collides_with(asteroid));
     }
 }
