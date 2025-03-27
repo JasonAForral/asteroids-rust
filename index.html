@@ -43,19 +43,24 @@
             const keys = new Set();
             window.addEventListener('keydown', (e) => keys.add(e.key));
             window.addEventListener('keyup', (e) => keys.delete(e.key));
+
+            const keys_rotate_left = new Set(['ArrowLeft', 'A', 'a']);
+            const keys_rotate_right = new Set(['ArrowRight', 'D', 'd']);
+            const keys_thrust = new Set(['ArrowUp', 'W', 'w']);
+            const keys_shoot = new Set([' ']);
             
             // Update game state based on keyboard input
             function handleInput() {
-                if (keys.has('ArrowLeft')) {
+                if (keys.intersection(keys_rotate_left).size) {
                     game.rotate_left();
                 }
-                if (keys.has('ArrowRight')) {
+                if (keys.intersection(keys_rotate_right).size) {
                     game.rotate_right();
                 }
-                if (keys.has('ArrowUp')) {
+                if (keys.intersection(keys_thrust).size) {
                     game.thrust();
                 }
-                if (keys.has(' ')) {
+                if (keys.intersection(keys_shoot).size) {
                     game.shoot();
                 }
                 requestAnimationFrame(handleInput);
