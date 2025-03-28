@@ -311,7 +311,7 @@ mod tests {
         let initial_y = player.y;
         player.velocity_x = 1.0;
         player.velocity_y = 1.0;
-        player.update();
+        player.update((500.0, 500.0));
         assert_eq!(player.x, initial_x + 1.0);
         assert_eq!(player.y, initial_y + 1.0);
     }
@@ -331,7 +331,7 @@ mod tests {
         let mut asteroid = Asteroid::new(100.0, 100.0);
         let initial_x = asteroid.x;
         let initial_y = asteroid.y;
-        asteroid.update();
+        asteroid.update((500.0, 500.0));
         assert!(asteroid.x != initial_x || asteroid.y != initial_y);
     }
 
@@ -396,6 +396,7 @@ mod tests {
         ];
         let mut bullets = Vec::new();
         let mut score = 0;
+        let canvas_dimensions = (500.0, 500.0);
 
         // Test shooting
         let initial_bullet_count = bullets.len();
@@ -419,14 +420,14 @@ mod tests {
         // Test movement
         let initial_x = player.x;
         let initial_y = player.y;
-        player.update();
+        player.update(canvas_dimensions);
         assert!(player.x != initial_x || player.y != initial_y);
 
         // Test asteroid movement
         for asteroid in &mut asteroids {
             let initial_x = asteroid.x;
             let initial_y = asteroid.y;
-            asteroid.update();
+            asteroid.update(canvas_dimensions);
             assert!(asteroid.x != initial_x || asteroid.y != initial_y);
         }
 
