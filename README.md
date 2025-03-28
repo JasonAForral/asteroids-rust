@@ -1,5 +1,7 @@
 # Asteroids Game in Rust + WebAssembly
 
+[![Rust](https://github.com/intrepion/asteroids-rust/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/intrepion/asteroids-rust/actions/workflows/rust.yml)
+
 A classic Asteroids game implemented in Rust and compiled to WebAssembly.
 
 ## Prerequisites
