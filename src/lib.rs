@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
-use std::f64::consts::PI;
+use std::f64::consts::TAU;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global allocator.
 #[cfg(feature = "wee_alloc")]
@@ -58,7 +58,8 @@ impl Game {
     }
 
     pub fn update(&mut self) {
-        self.player.update();
+        let (width, height) = (self.canvas.width() as f64, self.canvas.height() as f64);
+        self.player.update((width, height));
         
         // Update bullets
         for bullet in &mut self.bullets {
@@ -67,7 +68,7 @@ impl Game {
         
         // Update asteroids
         for asteroid in &mut self.asteroids {
-            asteroid.update();
+            asteroid.update((width, height));
         }
 
         // Remove bullets that are off screen
@@ -156,9 +157,17 @@ impl Player {
         }
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, (width, height): (f64, f64)) {
         self.x += self.velocity_x;
         self.y += self.velocity_y;
+
+        let size = 20.0;
+
+        if self.x > width + size { self.x -= width + size + size }
+        if self.x < 0.0 - size { self.x += width + size + size }
+
+        if self.y > height + size { self.y -= height + size + size }
+        if self.y < 0.0 - size { self.y += height  + size + size }
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
@@ -172,7 +181,7 @@ impl Player {
         context.line_to(-10.0, 10.0);
         context.close_path();
         
-        context.set_stroke_style(&JsValue::from_str("white"));
+        context.set_stroke_style_str("white");
         context.stroke();
         
         context.restore();
@@ -183,16 +192,18 @@ impl Player {
     }
 
     fn thrust(&mut self) {
-        self.velocity_x += self.angle.sin() * 0.5;
-        self.velocity_y -= self.angle.cos() * 0.5;
+        let (sin, cos) = self.angle.sin_cos();
+        self.velocity_x += sin * 0.5;
+        self.velocity_y -= cos * 0.5;
     }
 
     fn shoot(&self) -> Bullet {
+        let (sin, cos) = self.angle.sin_cos();
         Bullet {
-            x: self.x + self.angle.sin() * 20.0,
-            y: self.y - self.angle.cos() * 20.0,
-            velocity_x: self.angle.sin() * 10.0,
-            velocity_y: -self.angle.cos() * 10.0,
+            x: self.x + sin * 20.0,
+            y: self.y - cos * 20.0,
+            velocity_x: sin * 10.0 + self.velocity_x,
+            velocity_y: -cos * 10.0 + self.velocity_y,
         }
     }
 }
@@ -216,15 +227,23 @@ impl Asteroid {
         }
     }
 
-    fn update(&mut self) {
+    fn update(&mut self, (width, height): (f64, f64)) {
         self.x += self.velocity_x;
         self.y += self.velocity_y;
+
+        let size = self.size;
+
+        if self.x > width + size { self.x -= width + size + size }
+        if self.x < 0.0 - size { self.x += width + size + size }
+
+        if self.y > height + size { self.y -= height + size + size }
+        if self.y < 0.0 - size { self.y += height  + size + size }
     }
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
         context.begin_path();
-        context.arc(self.x, self.y, self.size, 0.0, PI * 2.0).unwrap();
-        context.set_stroke_style(&JsValue::from_str("white"));
+        context.arc(self.x, self.y, self.size, 0.0, TAU).unwrap();
+        context.set_stroke_style_str("white");
         context.stroke();
     }
 }
@@ -244,16 +263,16 @@ impl Bullet {
 
     fn draw(&self, context: &CanvasRenderingContext2d) {
         context.begin_path();
-        context.arc(self.x, self.y, 2.0, 0.0, PI * 2.0).unwrap();
-        context.set_fill_style(&JsValue::from_str("white"));
+        context.arc(self.x, self.y, 2.0, 0.0, TAU).unwrap();
+        context.set_fill_style_str("white");
         context.fill();
     }
 
     fn collides_with(&self, asteroid: &Asteroid) -> bool {
         let dx = self.x - asteroid.x;
         let dy = self.y - asteroid.y;
-        let distance = (dx * dx + dy * dy).sqrt();
-        distance < asteroid.size
+        let distance_sq = dx * dx + dy * dy;
+        distance_sq < asteroid.size * asteroid.size
     }
 }
 
@@ -292,7 +311,7 @@ mod tests {
         let initial_y = player.y;
         player.velocity_x = 1.0;
         player.velocity_y = 1.0;
-        player.update();
+        player.update((500.0, 500.0));
         assert_eq!(player.x, initial_x + 1.0);
         assert_eq!(player.y, initial_y + 1.0);
     }
@@ -312,7 +331,7 @@ mod tests {
         let mut asteroid = Asteroid::new(100.0, 100.0);
         let initial_x = asteroid.x;
         let initial_y = asteroid.y;
-        asteroid.update();
+        asteroid.update((500.0, 500.0));
         assert!(asteroid.x != initial_x || asteroid.y != initial_y);
     }
 
@@ -377,6 +396,7 @@ mod tests {
         ];
         let mut bullets = Vec::new();
         let mut score = 0;
+        let canvas_dimensions = (500.0, 500.0);
 
         // Test shooting
         let initial_bullet_count = bullets.len();
@@ -400,14 +420,14 @@ mod tests {
         // Test movement
         let initial_x = player.x;
         let initial_y = player.y;
-        player.update();
+        player.update(canvas_dimensions);
         assert!(player.x != initial_x || player.y != initial_y);
 
         // Test asteroid movement
         for asteroid in &mut asteroids {
             let initial_x = asteroid.x;
             let initial_y = asteroid.y;
-            asteroid.update();
+            asteroid.update(canvas_dimensions);
             assert!(asteroid.x != initial_x || asteroid.y != initial_y);
         }
 
